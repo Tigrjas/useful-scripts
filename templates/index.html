@@ -71,6 +71,7 @@
     <div id="functionalityContainer" class="functionality-container">
         <button class="function-btn" onclick="goToPage('email')">Email Generator</button>
         <button class="function-btn" onclick="goToPage('image-resizer')">Image Resizer</button>
+        <button class="function-btn" onclick="goToPage('regex-editor')">Regex Editor</button>
     </div>
 
     <script>
@@ -79,6 +80,8 @@
                 window.location.href = '/email-generator'; // This route will lead to the email generator
             } else if (page === 'image-resizer') {
                 window.location.href = '/image-resizer';  // This route will lead to the image resizer
+            } else if (page === 'regex-editor') {
+                window.location.href = '/regex-editor';  // This route will lead to the regex editor
             }
         }
 

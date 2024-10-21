@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regex Editor</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .editor-area,
+        .reference-area {
+            padding: 20px;
+            border-radius: 8px;
+            background-color: #333;
+        }
+
+        .editor-area {
+            flex: 2;
+            margin-right: 20px;
+        }
+
+        .reference-area {
+            flex: 1;
+            background-color: #222;
+        }
+
+        input[type="text"],
+        textarea {
+            width: calc(100% - 20px);
+            /* Adjust width to fix right side jutting */
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 1rem;
+            border-radius: 8px;
+            border: 1px solid #555;
+            background-color: #444;
+            color: #f0f0f0;
+            box-sizing: border-box;
+            /* Ensures padding is included in width */
+        }
+
+        #matches {
+            background-color: #292929;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            background-color: yellow;
+            color: black;
+            font-weight: bold;
+        }
+
+        .reference-area ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .reference-area li {
+            margin-bottom: 10px;
+        }
+
+        .reference-area h2 {
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Regular Expression Editor</h1>
+
+    <div class="container">
+        <!-- Editor Area -->
+        <div class="editor-area">
+            <label for="regexInput">Enter Regex:</label>
+            <input type="text" id="regexInput" placeholder="Enter your regular expression here">
+
+            <label for="testString">Test String:</label>
+            <textarea id="testString" rows="8" placeholder="Enter the string you want to test"></textarea>
+
+            <div id="matches"></div>
+        </div>
+
+        <!-- Quick Reference Area -->
+        <div class="reference-area">
+            <h2>Regex Quick Reference</h2>
+            <ul>
+                <li><strong>.</strong> - Any character except newline</li>
+                <li><strong>^</strong> - Start of a string</li>
+                <li><strong>$</strong> - End of a string</li>
+                <li><strong>\d</strong> - Any digit (0-9)</li>
+                <li><strong>\D</strong> - Any non-digit</li>
+                <li><strong>\w</strong> - Any word character (a-z, A-Z, 0-9, _)</li>
+                <li><strong>\W</strong> - Any non-word character</li>
+                <li><strong>\s</strong> - Any whitespace character</li>
+                <li><strong>+</strong> - One or more of the previous token</li>
+                <li><strong>*</strong> - Zero or more of the previous token</li>
+                <li><strong>?</strong> - Zero or one of the previous token</li>
+                <li><strong>{n,m}</strong> - Between n and m of the previous token</li>
+                <li><strong>[abc]</strong> - Any one of a, b, or c</li>
+                <li><strong>(x|y)</strong> - Either x or y</li>
+                <li><strong>\</strong> - Escape a special character</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Automatically run regex when user types in either input field
+        document.getElementById('regexInput').addEventListener('input', runRegex);
+        document.getElementById('testString').addEventListener('input', runRegex);
+
+        function runRegex() {
+            const regexInput = document.getElementById('regexInput').value;
+            const testString = document.getElementById('testString').value;
+
+            // Clear the matches area if regex is empty
+            if (!regexInput.trim()) {
+                document.getElementById('matches').innerHTML = '';
+                return;
+            }
+
+            try {
+                // Create a RegExp object dynamically from the input
+                const regex = new RegExp(regexInput, 'g');
+
+                // Find matches
+                let matches = [];
+                let match;
+                while ((match = regex.exec(testString)) !== null) {
+                    matches.push(match);
+                }
+
+                // Highlight matches in the test string
+                let highlightedString = testString;
+                matches.reverse().forEach((m) => {
+                    highlightedString =
+                        highlightedString.slice(0, m.index) +
+                        `<span class="highlight">${m[0]}</span>` +
+                        highlightedString.slice(m.index + m[0].length);
+                });
+
+                // Display results
+                document.getElementById('matches').innerHTML = highlightedString;
+                document.getElementById('matches').style.display = 'block';
+            } catch (error) {
+                // Handle any errors in regex syntax
+                document.getElementById('matches').innerHTML = `<span style="color: red;">Invalid Regex: ${error.message}</span>`;
+            }
+        }
+    </script>
+
+</body>
+
+</html>
