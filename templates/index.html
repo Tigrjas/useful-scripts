@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splash Screen</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .search-bar {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            margin-bottom: 30px;
+            font-size: 16px;
+            border-radius: 25px;
+            border: 2px solid #444;
+            background-color: #333;
+            color: #fff;
+        }
+
+        .function-btn {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px 30px;
+            margin: 10px;
+            border: none;
+            border-radius: 25px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            width: 250px;
+            text-align: center;
+        }
+
+        .function-btn:hover {
+            background-color: #0056b3;
+        }
+
+        .functionality-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Utility App</h1>
+
+    <input type="text" id="searchBar" class="search-bar" placeholder="Search functionalities...">
+
+    <div id="functionalityContainer" class="functionality-container">
+        <button class="function-btn" onclick="goToPage('email')">Email Generator</button>
+        <button class="function-btn" onclick="goToPage('image-resizer')">Image Resizer</button>
+    </div>
+
+    <script>
+        function goToPage(page) {
+            if (page === 'email') {
+                window.location.href = '/email-generator'; // This route will lead to the email generator
+            } else if (page === 'image-resizer') {
+                window.location.href = '/image-resizer';  // This route will lead to the image resizer
+            }
+        }
+
+        // Search filter for functionalities
+        document.getElementById('searchBar').addEventListener('input', function () {
+            const query = this.value.toLowerCase();
+            const buttons = document.querySelectorAll('.function-btn');
+            buttons.forEach(button => {
+                const text = button.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    button.style.display = 'block';
+                } else {
+                    button.style.display = 'none';
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>

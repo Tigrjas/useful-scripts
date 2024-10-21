@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Fetcher</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            background-color: #1e1e1e;
+            /* Dark background */
+            color: #f0f0f0;
+            /* Light text for contrast */
+            height: 100vh;
+            margin: 0;
+        }
+
+        #generateEmailBtn {
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            transition: background-color 0.3s ease;
+            margin-top: 20px;
+        }
+
+        #generateEmailBtn:hover {
+            background-color: #0056b3;
+        }
+
+        .emailBox {
+            background-color: #2a2a2a;
+            /* Dark email box background */
+            border: 1px solid #444;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            width: 350px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            /* Subtle shadow for depth */
+            transition: transform 0.2s;
+        }
+
+        .emailBox:hover {
+            transform: scale(1.02);
+            /* Small scale-up on hover for interactivity */
+        }
+
+        .emailAddress {
+            font-weight: bold;
+            color: #ffd700;
+            /* Bright color for email addresses */
+            font-size: 18px;
+        }
+
+        .emailOutput {
+            margin-top: 15px;
+            white-space: pre-wrap;
+            background-color: #f5f5f5;
+            color: #333;
+            padding: 15px;
+            border-radius: 5px;
+            height: 150px;
+            overflow-y: auto;
+            font-family: monospace;
+            /* Monospace for email output for a clean, techy look */
+        }
+
+        .emailOutput p {
+            margin: 10px 0;
+            /* Spacing between emails */
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.3.2/socket.io.min.js"></script>
+</head>
+
+<body>
+
+    <button id="generateEmailBtn">Generate New Email</button>
+
+    <!-- Container to hold email boxes -->
+    <div id="emailContainer"></div>
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Generate a new email address when the button is clicked
+        document.getElementById("generateEmailBtn").addEventListener("click", function () {
+            fetch('/generate-email', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => console.log(data.status));
+        });
+
+        // Listen for new email address generation
+        socket.on('new_email_address', function (msg) {
+            const emailAddress = msg.email_address;
+
+            // Create a new box for the email address
+            const emailBox = document.createElement('div');
+            emailBox.classList.add('emailBox');
+
+            const emailAddressElem = document.createElement('p');
+            emailAddressElem.classList.add('emailAddress');
+            emailAddressElem.innerText = `Email: ${emailAddress}`;
+
+            const emailOutput = document.createElement('div');
+            emailOutput.classList.add('emailOutput');
+            emailOutput.id = `output-${emailAddress}`;  // Unique ID for each email output
+
+            emailBox.appendChild(emailAddressElem);
+            emailBox.appendChild(emailOutput);
+            document.getElementById("emailContainer").appendChild(emailBox);
+
+            // Copy email to clipboard automatically
+            navigator.clipboard.writeText(emailAddress).then(() => {
+                alert(`Copied ${emailAddress} to clipboard!`);
+            });
+        });
+
+        // Listen for new emails
+        socket.on('new_email', function (msg) {
+            const emailAddress = msg.email_address;
+            const emailData = msg.data;
+
+            const outputBox = document.getElementById(`output-${emailAddress}`);
+            if (outputBox) {
+                const newEmailLine = document.createElement('p');
+                newEmailLine.textContent = emailData;
+                outputBox.appendChild(newEmailLine);
+                outputBox.scrollTop = outputBox.scrollHeight;  // Auto-scroll to the bottom on new email
+            }
+        });
+    </script>
+
+</body>
+
+</html>

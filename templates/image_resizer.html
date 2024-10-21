@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Resizer</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        input[type="file"] {
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+
+        #imagePreview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .preset-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        select,
+        input[type="number"] {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .custom-size-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .custom-size-container input[type="number"] {
+            width: 48%;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+            width: 100%;
+            text-align: center;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        canvas {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Image Resizer</h1>
+
+    <div class="container">
+        <input type="file" id="imageInput" accept="image/*" onchange="loadImage()">
+
+        <img id="imagePreview" alt="Image Preview">
+
+        <div class="preset-container">
+            <label for="presetSizes">Choose a Preset Size:</label>
+            <select id="presetSizes">
+                <option value="1920,1080">16:9 (1920x1080)</option>
+                <option value="2560,1080">21:9 (2560x1080)</option>
+                <option value="500,500">Profile Picture (500x500)</option>
+                <option value="custom">Custom Size</option>
+            </select>
+        </div>
+
+        <div class="custom-size-container" id="customSizeContainer" style="display:none;">
+            <input type="number" id="customWidth" placeholder="Width" min="1">
+            <input type="number" id="customHeight" placeholder="Height" min="1">
+        </div>
+
+        <label>
+            <input type="checkbox" id="lockAspectRatio" checked>
+            Lock aspect ratio
+        </label>
+
+        <button onclick="resizeImage()">Resize Image</button>
+
+        <canvas id="canvas"></canvas>
+    </div>
+
+    <script>
+        let image, canvas, ctx, originalWidth, originalHeight;
+
+        function loadImage() {
+            const input = document.getElementById('imageInput');
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                image = new Image();
+                image.src = e.target.result;
+                image.onload = function () {
+                    originalWidth = image.width;
+                    originalHeight = image.height;
+                    document.getElementById('imagePreview').src = image.src;
+                    document.getElementById('imagePreview').style.display = 'block';
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Toggle custom size input fields based on dropdown selection
+        document.getElementById('presetSizes').addEventListener('change', function () {
+            const customSizeContainer = document.getElementById('customSizeContainer');
+            if (this.value === 'custom') {
+                customSizeContainer.style.display = 'flex';
+            } else {
+                customSizeContainer.style.display = 'none';
+            }
+        });
+
+        // Resize image function
+        function resizeImage() {
+            const preset = document.getElementById('presetSizes').value;
+            let width, height;
+
+            if (preset === 'custom') {
+                width = parseInt(document.getElementById('customWidth').value);
+                height = parseInt(document.getElementById('customHeight').value);
+
+                if (document.getElementById('lockAspectRatio').checked) {
+                    const aspectRatio = originalWidth / originalHeight;
+                    height = Math.round(width / aspectRatio);  // Adjust height to maintain aspect ratio
+                }
+
+                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                    alert('Please enter valid dimensions.');
+                    return;
+                }
+            } else {
+                [width, height] = preset.split(',').map(Number);
+            }
+
+            // Draw resized image on canvas
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(image, 0, 0, width, height);
+
+            downloadImage();
+        }
+
+        // Function to download the resized image
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = canvas.toDataURL('image/jpeg');
+            link.download = 'resized_image.jpg';
+            link.click();
+        }
+    </script>
+
+</body>
+
+</html>
