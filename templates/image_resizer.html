@@ -119,11 +119,10 @@
                 <option value="1920,1080">16:9 (1920x1080)</option>
                 <option value="2560,1080">21:9 (2560x1080)</option>
                 <option value="500,500">Profile Picture (500x500)</option>
-                <option value="custom">Custom Size</option>
             </select>
         </div>
 
-        <div class="custom-size-container" id="customSizeContainer" style="display:none;">
+        <div class="custom-size-container">
             <input type="number" id="customWidth" placeholder="Width" min="1">
             <input type="number" id="customHeight" placeholder="Height" min="1">
         </div>
@@ -139,7 +138,7 @@
     </div>
 
     <script>
-        let image, canvas, ctx, originalWidth, originalHeight;
+        let image, canvas, ctx, originalWidth, originalHeight, aspectRatio;
 
         function loadImage() {
             const input = document.getElementById('imageInput');
@@ -151,20 +150,35 @@
                 image.onload = function () {
                     originalWidth = image.width;
                     originalHeight = image.height;
+                    aspectRatio = originalWidth / originalHeight;
+
+                    // Show the preview image
                     document.getElementById('imagePreview').src = image.src;
                     document.getElementById('imagePreview').style.display = 'block';
+
+                    // Set the custom width and height fields to the original image dimensions
+                    document.getElementById('customWidth').value = originalWidth;
+                    document.getElementById('customHeight').value = originalHeight;
                 };
             };
             reader.readAsDataURL(file);
         }
 
-        // Toggle custom size input fields based on dropdown selection
-        document.getElementById('presetSizes').addEventListener('change', function () {
-            const customSizeContainer = document.getElementById('customSizeContainer');
-            if (this.value === 'custom') {
-                customSizeContainer.style.display = 'flex';
-            } else {
-                customSizeContainer.style.display = 'none';
+        // Automatically update height when width changes if aspect ratio lock is checked
+        document.getElementById('customWidth').addEventListener('input', function () {
+            if (document.getElementById('lockAspectRatio').checked) {
+                const width = parseInt(this.value);
+                const height = Math.round(width / aspectRatio);
+                document.getElementById('customHeight').value = height;
+            }
+        });
+
+        // Automatically update width when height changes if aspect ratio lock is checked
+        document.getElementById('customHeight').addEventListener('input', function () {
+            if (document.getElementById('lockAspectRatio').checked) {
+                const height = parseInt(this.value);
+                const width = Math.round(height * aspectRatio);
+                document.getElementById('customWidth').value = width;
             }
         });
 
@@ -173,21 +187,13 @@
             const preset = document.getElementById('presetSizes').value;
             let width, height;
 
-            if (preset === 'custom') {
-                width = parseInt(document.getElementById('customWidth').value);
-                height = parseInt(document.getElementById('customHeight').value);
+            // If using custom size
+            width = parseInt(document.getElementById('customWidth').value);
+            height = parseInt(document.getElementById('customHeight').value);
 
-                if (document.getElementById('lockAspectRatio').checked) {
-                    const aspectRatio = originalWidth / originalHeight;
-                    height = Math.round(width / aspectRatio);  // Adjust height to maintain aspect ratio
-                }
-
-                if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
-                    alert('Please enter valid dimensions.');
-                    return;
-                }
-            } else {
-                [width, height] = preset.split(',').map(Number);
+            if (isNaN(width) || isNaN(height) || width <= 0 || height <= 0) {
+                alert('Please enter valid dimensions.');
+                return;
             }
 
             // Draw resized image on canvas
